@@ -100,7 +100,7 @@
 						<a href="https://revistas.udenar.edu.co/customviewer/v-pdf.html?pdfUrl={$pdfUrl|trim|escape:'url'}"
 						class="obj_galley_link pdf"
 						target="_blank">
-							Custom PDF
+							Custom {$galley->getGalleyLabel()|escape}
 						</a>
 					</li>
 				{/if}
