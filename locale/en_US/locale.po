@@ -71,3 +71,9 @@ msgstr ""
 
 msgid "plugins.themes.rtend_theme.option.useHomepageImageAsHeader.option"
 msgstr "Show the homepage image as the header background."
+
+msgid "plugins.themes.rtend_theme.option.resources"
+msgstr "Resources links"
+
+msgid "plugins.themes.rtend_theme.option.contact"
+msgstr "For Authors"

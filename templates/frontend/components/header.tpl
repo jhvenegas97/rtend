@@ -1,3 +1,5 @@
+
+
 {**
  * lib/pkp/templates/frontend/components/header.tpl
  *
@@ -26,9 +28,10 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <style>
        .top-row {
-            background-color: #1a4b84;
+            background-color: {$themeColor}; /* Use the theme color */
             padding: 8px 0;
         }
         .top-row ul {
@@ -62,7 +65,7 @@
         }
 
 		.navbar {
-            background-color: #002A5C;
+            background-color: {$darkColor}; /* Darkest color */
             padding: 0.5rem 1rem;
         }
         .navbar-nav .nav-link {
@@ -73,7 +76,7 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
         .dropdown-menu {
-            background-color: #002A5C;
+            background-color: {$darkColor}; /* Darkest color */
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .dropdown-item {
@@ -85,7 +88,7 @@
         }
         .search-button {
             background-color: white;
-            color: #002A5C;
+            color: {$darkColor}; /* Darkest color */
             border: none;
         }
         .search-button:hover {
@@ -96,21 +99,27 @@
 	<script src="https://kit.fontawesome.com/7d1bb7724a.js" crossorigin="anonymous"></script>
 
 	<div class="pkp_structure_page">
-
 		{* Header *}
 		<header class="" id="" role="banner">
 		<div class="top-row">
         <div class="container">
             <div class="row align-items-center">
-                <!-- Social Icons -->
-                <div class="col-md-6 social-icons">
-                    <ul>
-                        <li><a href="mailTo:revistatendencias@udenar.edu.co"><i class="fas fa-envelope"></i></a></li>
-                        <li><a href="https://www.facebook.com/RevistaTendenciasUdenar" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
-                        <li><a href="#"><i class="fa-brands fa-x-twitter" target="_blank"></i></a></li>
-                        <li><a href="#"><i class="fab fa-linkedin-in" target="_blank"></i></a></li>
-                    </ul>
-                </div>
+                {if $socialNavigationMenu}
+                    <!-- Social Icons -->
+                    <div class="col-md-6 social-icons">
+                        <ul>
+                            {foreach from=$socialNavigationMenu item=menuItem}
+                                <li>
+                                    <a href="{$menuItem.url|escape}" target="_blank">
+                                        {if $menuItem.icon}
+                                            <i class="{$menuItem.icon}"></i>
+                                        {/if}
+                                    </a>
+                                </li>
+                            {/foreach}
+                        </ul>
+                    </div>
+                {/if}
 
                 <!-- Right Side Links -->
                 <div class="col-md-6 text-end nav-links">

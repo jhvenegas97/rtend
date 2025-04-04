@@ -99,8 +99,22 @@ class RTendThemePlugin extends ThemePlugin {
 			'default' => false,
 		]);
 
+		// Get base colour (from theme option)
+        $themeColor = $this->getOption('baseColour') ?? '#1a4b84';
+
+        // Call the darkenColor method from within the same class
+        $darkColor = $this->darkenColor($themeColor, 20); // Darken by 20%
+
+        // Assign to template
+        $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
+        $templateMgr->assign('themeColor', $themeColor);
+        $templateMgr->assign('darkColor', $darkColor);
+
 		// Load primary stylesheet
 		$this->addStyle('stylesheet', 'styles/index.less');
+
+		// Load custom stylesheet
+		$this->addStyle('custom-style', 'styles/custom.css', array('contexts' => 'frontend'));
 
 		// Store additional LESS variables to process based on options
 		$additionalLessVariables = array();
@@ -187,7 +201,223 @@ class RTendThemePlugin extends ThemePlugin {
 		$this->addScript('default', 'js/main.js');
 
 		// Add navigation menu areas for this theme
-		$this->addMenuArea(array('primary', 'user', 'social'));
+		$this->addMenuArea(array('primary', 'user', 'social','resources'));
+
+		HookRegistry::register('TemplateManager::display', array($this, 'loadSocialNavigationMenus'));
+
+		HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesNavigationMenus'));
+
+		$templateMgr = TemplateManager::getManager(Application::get()->getRequest());
+    
+	}
+
+	private function darkenColor($hex, $percent) {
+		// Delete '#' if exists
+		$hex = str_replace("#", "", $hex);
+	
+		// Convert to RGB
+		list($r, $g, $b) = sscanf($hex, "%02x%02x%02x");
+	
+		// Reduce the component based on percentaje
+		$r = max(0, min(255, $r - ($r * $percent / 100)));
+		$g = max(0, min(255, $g - ($g * $percent / 100)));
+		$b = max(0, min(255, $b - ($b * $percent / 100)));
+	
+		// Return color in Hexadecimal format
+		return sprintf("#%02x%02x%02x", $r, $g, $b);
+	}
+
+	/**
+	 * Load the social navigation menu into the template
+	 */
+	public function loadSocialNavigationMenus($hookName, $args) {
+		$templateMgr = $args[0];
+		$request = Application::get()->getRequest();
+		$context = $request->getContext();
+		
+		if (!$context) return false;
+		
+		$navigationMenuDao = DAORegistry::getDAO('NavigationMenuDAO');
+		$navigationMenus = $navigationMenuDao->getByContextId($context->getId());
+
+		$socialNavigationMenu = null;
+		while ($navigationMenu = $navigationMenus->next()) {
+			if($navigationMenu->getAreaName() == 'social'){
+				$socialNavigationMenu = $navigationMenu;
+            	break;
+			}
+		}
+
+		$iconMap = [
+			'Facebook' => 'fab fa-facebook-f',
+			'Twitter' => 'fa-brands fa-x-twitter',
+			'LinkedIn' => 'fab fa-linkedin-in',
+			'Email' => 'fas fa-envelope',
+			'Instagram' => 'fab fa-instagram',
+			'YouTube' => 'fab fa-youtube',
+			'TikTok' => 'fab fa-tiktok',
+			'Pinterest' => 'fab fa-pinterest-p',
+			'Snapchat' => 'fab fa-snapchat-ghost',
+			'Reddit' => 'fab fa-reddit-alien',
+			'WhatsApp' => 'fab fa-whatsapp',
+			'Telegram' => 'fab fa-telegram-plane',
+			'Threads' => 'fab fa-threads',
+			'Tumblr' => 'fab fa-tumblr',
+		];
+		
+		if ($socialNavigationMenu) {
+			$navigationMenuItemDao = DAORegistry::getDAO('NavigationMenuItemDAO');
+			$navigationMenuItemAssignmentDao = DAORegistry::getDAO('NavigationMenuItemAssignmentDAO');
+			$menuTree = $navigationMenuItemAssignmentDao->getByMenuId($socialNavigationMenu->getId())->toArray();
+
+			// Build the menu tree
+			$socialMenu = array();
+			foreach ($menuTree as $assignment) {
+				$menuItem = $navigationMenuItemDao->getById($assignment->getMenuItemId());
+				if ($menuItem) {
+					$title = $menuItem->getLocalizedTitle();
+        			$url = $menuItem->getLocalizedRemoteUrl();
+
+					 // Try to match by title
+					 $iconClass = $iconMap[$title] ?? '';
+
+					 // Fallback: Detect by URL if title is not mapped
+					 if (!$iconClass) {
+						if (strpos($url, 'facebook.com') !== false) {
+							$iconClass = 'fab fa-facebook-f';
+						} elseif (strpos($url, 'twitter.com') !== false || strpos($url, 'x.com') !== false) {
+							$iconClass = 'fa-brands fa-x-twitter';
+						} elseif (strpos($url, 'linkedin.com') !== false) {
+							$iconClass = 'fab fa-linkedin-in';
+						} elseif (strpos($url, 'instagram.com') !== false) {
+							$iconClass = 'fab fa-instagram';
+						} elseif (strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false) {
+							$iconClass = 'fab fa-youtube';
+						} elseif (strpos($url, 'tiktok.com') !== false) {
+							$iconClass = 'fab fa-tiktok';
+						} elseif (strpos($url, 'pinterest.com') !== false) {
+							$iconClass = 'fab fa-pinterest-p';
+						} elseif (strpos($url, 'snapchat.com') !== false) {
+							$iconClass = 'fab fa-snapchat-ghost';
+						} elseif (strpos($url, 'reddit.com') !== false) {
+							$iconClass = 'fab fa-reddit-alien';
+						} elseif (strpos($url, 'whatsapp.com') !== false) {
+							$iconClass = 'fab fa-whatsapp';
+						} elseif (strpos($url, 'telegram.me') !== false || strpos($url, 't.me') !== false) {
+							$iconClass = 'fab fa-telegram-plane';
+						} elseif (strpos($url, 'threads.net') !== false) {
+							$iconClass = 'fab fa-threads'; // Note: only available in some Font Awesome versions
+						} elseif (strpos($url, 'tumblr.com') !== false) {
+							$iconClass = 'fab fa-tumblr';
+						} elseif (strpos($url, 'mailto:') !== false) {
+							$iconClass = 'fas fa-envelope';
+						}
+					}
+
+					$socialMenu[] = array(
+						'title' => $title,
+						'url' => $url,
+						'icon' => $iconClass,
+					);
+				}
+			}
+			
+			$templateMgr->assign('socialNavigationMenu', $socialMenu);
+
+			$templateMgr->assign('authorInformation', $context->getSetting('authorInformation',AppLocale::getLocale()));
+
+			
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Load the resources navigation menu into the template
+	 */
+	public function loadResourcesNavigationMenus($hookName, $args) {
+		$templateMgr = $args[0];
+		$request = Application::get()->getRequest();
+		$context = $request->getContext();
+	
+		if (!$context) return false;
+	
+		$navigationMenuDao = DAORegistry::getDAO('NavigationMenuDAO');
+		$navigationMenus = $navigationMenuDao->getByContextId($context->getId());
+	
+		$resourcesNavigationMenu = null;
+		while ($navigationMenu = $navigationMenus->next()) {
+			if ($navigationMenu->getAreaName() == 'resources') {
+				$resourcesNavigationMenu = $navigationMenu;
+				break;
+			}
+		}
+	
+		// Iconos por tipo
+		$iconMapByType = [
+			'NMI_TYPE_USER_REGISTER'   => 'fas fa-user-plus',
+			'NMI_TYPE_USER_LOGIN'      => 'fas fa-sign-in-alt',
+			'NMI_TYPE_USER_DASHBOARD'  => 'fas fa-tachometer-alt',
+			'NMI_TYPE_USER_PROFILE'    => 'fas fa-user',
+			'NMI_TYPE_ADMINISTRATION'  => 'fas fa-cogs',
+			'NMI_TYPE_USER_LOGOUT'     => 'fas fa-sign-out-alt',
+			'NMI_TYPE_CURRENT'         => 'fas fa-link', // Fallback por defecto
+			'NMI_TYPE_ANNOUNCEMENTS'   => 'fas fa-bullhorn',
+			'NMI_TYPE_ABOUT'           => 'fas fa-info-circle',
+			'NMI_TYPE_SUBMISSIONS'     => 'fas fa-paper-plane',
+			'NMI_TYPE_EDITORIAL_TEAM'  => 'fas fa-users',
+			'NMI_TYPE_PRIVACY'         => 'fas fa-user-shield',
+			'NMI_TYPE_CONTACT'         => 'fas fa-envelope',
+			'NMI_TYPE_SEARCH'          => 'fas fa-search',
+			'NMI_TYPE_ARCHIVES'        => 'fas fa-archive',
+			'NMI_TYPE_REMOTE_URL'      => 'fas fa-external-link-alt',
+		];
+	
+		if ($resourcesNavigationMenu) {
+			$navigationMenuItemDao = DAORegistry::getDAO('NavigationMenuItemDAO');
+			$navigationMenuItemAssignmentDao = DAORegistry::getDAO('NavigationMenuItemAssignmentDAO');
+			$menuTree = $navigationMenuItemAssignmentDao->getByMenuId($resourcesNavigationMenu->getId())->toArray();
+	
+			$resourcesMenu = array();
+			foreach ($menuTree as $assignment) {
+				$menuItem = $navigationMenuItemDao->getById($assignment->getMenuItemId());
+				if ($menuItem) {
+					$title = $menuItem->getLocalizedTitle();
+					$url = $menuItem->getUrl();
+					$type = $menuItem->getType();
+	
+					$iconClass = $iconMapByType[$type] ?? 'fas fa-link';
+	
+					// Refinar ícono si es NMI_TYPE_CURRENT
+					if ($type === 'NMI_TYPE_CURRENT') {
+						$titleKey = $menuItem->getTitleLocaleKey();
+						switch ($titleKey) {
+							case 'navigation.home':
+								$iconClass = 'fas fa-home';
+								break;
+							case 'navigation.about':
+								$iconClass = 'fas fa-info-circle';
+								break;
+							case 'navigation.archives':
+								$iconClass = 'fas fa-archive';
+								break;
+							default:
+								$iconClass = 'fas fa-link';
+						}
+					}
+	
+					$resourcesMenu[] = [
+						'title' => $title,
+						'url' => $url,
+						'icon' => $iconClass,
+					];
+				}
+			}
+	
+			$templateMgr->assign('resourcesNavigationMenu', $resourcesMenu);
+		}
+	
+		return false;
 	}
 
 	/**

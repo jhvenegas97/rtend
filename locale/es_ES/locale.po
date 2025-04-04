@@ -74,3 +74,9 @@ msgstr ""
 
 msgid "plugins.themes.rtend_theme.option.useHomepageImageAsHeader.option"
 msgstr "Mostrar la imagen de página de inicio como fondo de la cabecera."
+
+msgid "plugins.themes.rtend_theme.option.resources"
+msgstr "Links de Interés"
+
+msgid "plugins.themes.rtend_theme.option.contact"
+msgstr "Para Autores"

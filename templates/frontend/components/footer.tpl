@@ -27,7 +27,7 @@
 
 <style>
 	.footer {
-            background-color: #002A5C;
+            background-color: {$darkColor}; /* Darkest color */
             color: white;
             padding: 40px 0;
         }
@@ -68,33 +68,47 @@
                 <!-- Logo and Description -->
                 <div class="col-md-4 mb-4">
                     <h4>Sistema de Revistas Universidad de Nariño</h4>
-                    <p>Universidad de Nariño</p>
-                    <p>San Juan de Pasto - Colombia</p>
-                    <p>Ciudad Universitaria - Torobajo - Calle 18 No. 52-35</p>
-                    <p>Biblioteca Alberto Quijano- Segundo Piso</p>
+                    {if $pageFooter}
+                        <div>
+                            {$pageFooter}
+                        </div>
+                    {/if}
                 </div>
 
                 <!-- Contact Information -->
                 <div class="col-md-4 mb-4">
-                    <h4>Contacto</h4>
+                    <h4>{translate key="plugins.themes.rtend_theme.option.contact"}</h4>
                     <div class="contact-info">
-                        <p><i class="fas fa-envelope"></i> Email: revistatendencias@udenar.edu.co</p>
-                        <p><i class="fas fa-phone"></i> Teléfono: 301 425 3247</p>
-                        <p><i class="fas fa-globe"></i> Website: <a href="rtend" target="_blank">revistas.udenar.edu.co</a></p>
+                        {if $authorInformation}
+                            <p>{$authorInformation}</p>
+                        {/if}
                     </div>
+                    <!-- Social Icons -->
                     <div class="social-icons mt-3">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        {if $socialNavigationMenu}
+                            {foreach from=$socialNavigationMenu item=menuItem}
+                                <a href="{$menuItem.url|escape}" target="_blank">
+                                    {if $menuItem.icon}
+                                        <i class="{$menuItem.icon}"></i>
+                                    {/if}
+                                </a>
+                            {/foreach}
+                        {/if}
                     </div>
                 </div>
 
                 <!-- Important Links -->
                 <div class="col-md-4 mb-4">
-                    <h4>Links de Interés</h4>
-                    <p><a href="#"><i class="fas fa-info-circle me-2"></i>Acerca de la Revista</a></p>
-                    <p><a href="#"><i class="fas fa-users me-2"></i>Equipo Editorial</a></p>
-                    <p><a href="#"><i class="fas fa-file-alt me-2"></i>Envíos</a></p>
+                    <h4>{translate key="plugins.themes.rtend_theme.option.resources"}</h4>
+                    {if $resourcesNavigationMenu}
+                            {foreach from=$resourcesNavigationMenu item=menuItem}
+                                <p><a href="{$menuItem.url|escape}" target="_blank">
+                                    {if $menuItem.icon}
+                                        <i class="{$menuItem.icon}"></i> {$menuItem.title|escape}
+                                    {/if}
+                                </a></p>
+                            {/foreach}
+                    {/if}
                 </div>
             </div>
 
